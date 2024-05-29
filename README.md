@@ -23,6 +23,7 @@ This project sets up a Dockerized single-node Spark cluster and runs Spark jobs 
 
 `docker build -t spark-single-node .
 `
+
 4. **Run the Docker Container with Mounted Volumes:**
 
 `docker run -d --name spark-single-node -p 8080:8080 -p 7077:7077 -v $(pwd):/opt/spark/project spark-single-node
