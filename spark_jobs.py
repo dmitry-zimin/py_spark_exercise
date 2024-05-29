@@ -8,7 +8,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # Load Dataset
-df = spark.read.csv('/opt/spark/prjct/data/data.csv', header=True, inferSchema=True)
+df = spark.read.csv('/opt/spark/project/data/data.csv', header=True, inferSchema=True)
 
 # Question 1: Top 5 destinations for oil produced in Albania
 albania_df = df.filter(df['originName'] == 'Albania') \
