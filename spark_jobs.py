@@ -5,6 +5,10 @@ import pyspark.sql.functions as F
 # Initialize Spark Session
 spark = SparkSession.builder \
     .appName("CrudeOilAnalysis") \
+    .config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
+    .config("spark.sql.catalog.spark_catalog", "org.apache.iceberg.spark.SparkSessionCatalog") \
+    .config("spark.sql.catalog.spark_catalog.type", "hadoop") \
+    .config("spark.sql.catalog.spark_catalog.warehouse", "/opt/spark/warehouse") \
     .getOrCreate()
 
 # Load Dataset
@@ -16,6 +20,9 @@ albania_df = df.filter(df['originName'] == 'Albania') \
     .sum('quantity') \
     .orderBy('sum(quantity)', ascending=False) \
     .limit(5)
+
+# DF -> Iceberg format
+albania_df.write.format("iceberg").mode("overwrite").save("spark_catalog.default.albania_top5_destinations")
 
 # Question 2: For UK, destinations with total quantity > 100,000
 uk_destinations_df = df.filter(df['originName'] == 'United Kingdom') \
