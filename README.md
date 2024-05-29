@@ -10,8 +10,8 @@ This project sets up a Dockerized single-node Spark cluster and runs Spark jobs 
 
 1. **Clone the repository:**
    ```sh
-   git clone https://github.com/yourusername/crude-oil-analysis.git
-   cd crude-oil-analysis
+   git clone https://github.com/dmitry-zimin/py_spark_exercise.git
+   cd py_spark_exercise
 
 2. **Download the Dataset:**
    
