@@ -5,6 +5,10 @@ import pyspark.sql.functions as F
 # Initialize Spark Session
 spark = SparkSession.builder \
     .appName("CrudeOilAnalysis") \
+    .config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
+    .config("spark.sql.catalog.spark_catalog", "org.apache.iceberg.spark.SparkSessionCatalog") \
+    .config("spark.sql.catalog.spark_catalog.type", "hadoop") \
+    .config("spark.sql.catalog.spark_catalog.warehouse", "/opt/spark/warehouse") \
     .getOrCreate()
 
 # Load Dataset
@@ -14,8 +18,24 @@ df = spark.read.csv('/opt/spark/project/data/data.csv', header=True, inferSchema
 albania_df = df.filter(df['originName'] == 'Albania') \
     .groupBy('destinationName') \
     .sum('quantity') \
-    .orderBy('sum(quantity)', ascending=False) \
+    .withColumnRenamed("sum(quantity)", "quantity") \
+    .orderBy('quantity', ascending=False) \
     .limit(5)
+
+# DF -> Iceberg format
+spark.sql("""
+CREATE TABLE IF NOT EXISTS spark_catalog.default.albania_top5_destinations (
+  destinationName STRING,
+  quantity BIGINT
+) USING iceberg
+""")
+albania_df.write.format("iceberg").mode("overwrite").save("spark_catalog.default.albania_top5_destinations")
+
+# Verify that the data has been written to the Iceberg table
+written_df = spark.read.format("iceberg").load("spark_catalog.default.albania_top5_destinations")
+
+print("\nData written to Iceberg table 'albania_top5_destinations':")
+written_df.show(truncate=False)
 
 # Question 2: For UK, destinations with total quantity > 100,000
 uk_destinations_df = df.filter(df['originName'] == 'United Kingdom') \
